@@ -1,0 +1,19 @@
+#pragma once
+
+// Split 
+#define EE_HANDS                          
+#define SPLIT_POINTING_ENABLE
+#define SOFT_SERIAL_PIN GP1
+
+// Pimoroni Trackball 
+#define POINTING_DEVICE_RIGHT             
+#define PIMORONI_TRACKBALL_INVERT_X       
+
+
+// I2C 
+#define I2C_DRIVER I2CD1
+#define I2C1_SDA_PIN GP2
+#define I2C1_SCL_PIN GP3
+
+// OLED timeout
+#define OLED_TIMEOUT 30000
