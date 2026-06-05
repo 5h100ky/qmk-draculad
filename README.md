@@ -156,11 +156,9 @@ POINTING_DEVICE_ENABLE = yes
 
 ## License
 
-This project is based on QMK Firmware and follows the same license terms.
+The firmware code in this repository is based on [QMK Firmware](https://github.com/qmk/qmk_firmware), which is licensed under the **GNU General Public License v2 (or later)**. This project follows the same license terms.
 
 ```
-Copyright (C) 2024 contributors
-
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 2 of the License, or
@@ -175,4 +173,5 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 ```
 
-The original DracuLad keyboard design is by MangoIV and is used with respect to its original licensing terms.
+> **Note on the original DracuLad design:**
+> The original [DracuLad keyboard](https://github.com/MangoIV/dracuLad) by [MangoIV](https://github.com/MangoIV) does not include an explicit license file. MangoIV has stated the project is open source and non-commercial. This RP2040 port is shared in the same spirit — for personal, non-commercial use by the keyboard community. If you intend to use this commercially, please reach out to the original author.
