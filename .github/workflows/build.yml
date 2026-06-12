@@ -1,0 +1,59 @@
+name: Build Firmware
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y gcc-arm-none-eabi
+
+      - name: Clone vial-qmk
+        run: |
+          git clone --depth 1 \
+            --recurse-submodules \
+            --shallow-submodules \
+            https://github.com/vial-kb/vial-qmk.git vial-qmk
+
+      - name: Install Python dependencies
+        working-directory: vial-qmk
+        run: pip install -r requirements.txt
+
+      - name: Copy keyboard files
+        run: |
+          # Parent directory (config.h 제외 — child에서 OLED 정의 중복 방지)
+          mkdir -p vial-qmk/keyboards/5h100ky/dracula
+          cp keyboard.json rules.mk vial-qmk/keyboards/5h100ky/dracula/
+
+          # Keyboard variant
+          mkdir -p vial-qmk/keyboards/5h100ky/dracula/qmk-draculad
+          cp -r config.h keyboard.json rules.mk keymaps \
+            vial-qmk/keyboards/5h100ky/dracula/qmk-draculad/
+
+      - name: Build firmware
+        working-directory: vial-qmk
+        run: make 5h100ky/dracula/qmk-draculad:vial
+
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: draculad-rp2040-vial
+          path: vial-qmk/*.uf2
+          if-no-files-found: error
