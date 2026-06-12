@@ -1,7 +1,7 @@
 #pragma once
 
-// Split
-#define EE_HANDS
+// Split — 항상 좌측을 USB(마스터)에 연결
+#define MASTER_LEFT
 #define SPLIT_POINTING_ENABLE
 
 // Pimoroni Trackball 
