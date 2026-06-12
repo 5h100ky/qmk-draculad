@@ -32,8 +32,8 @@
     },
     "encoder": {
         "rotary": [
-            {"pin_a": "GP10", "pin_b": "GP14", "resolution": 4},
-            {"pin_a": "GP12", "pin_b": "GP13", "resolution": 4}
+            {"pin_a": "GP23", "pin_b": "GP21", "resolution": 4},
+            {"pin_a": "GP8",  "pin_b": "GP9",  "resolution": 4}
         ]
     },
     "split": {
@@ -44,8 +44,8 @@
         "encoder": {
             "right": {
                 "rotary": [
-                    {"pin_a": "GP10", "pin_b": "GP14", "resolution": 4},
-                    {"pin_a": "GP12", "pin_b": "GP13", "resolution": 4}
+                    {"pin_a": "GP23", "pin_b": "GP21", "resolution": 4},
+                    {"pin_a": "GP8",  "pin_b": "GP9",  "resolution": 4}
                 ]
             }
         }
