@@ -14,7 +14,7 @@
         "rows": ["GP8", "GP6", "GP5", "GP4"]
     },
     "ws2812": {
-        "pin": "GP7",
+        "pin": "GP0",
         "driver": "vendor"
     },
     "rgblight": {
