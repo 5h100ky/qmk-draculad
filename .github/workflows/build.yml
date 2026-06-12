@@ -32,9 +32,15 @@ jobs:
             --shallow-submodules \
             https://github.com/vial-kb/vial-qmk.git vial-qmk
 
-      - name: Install Python dependencies
+      - name: Install QMK CLI and Python dependencies
         working-directory: vial-qmk
-        run: pip install -r requirements.txt
+        run: |
+          pip install qmk
+          pip install -r requirements.txt
+
+      - name: Configure QMK home
+        working-directory: vial-qmk
+        run: qmk config user.qmk_home=$(pwd)
 
       - name: Copy keyboard files
         run: |
@@ -49,7 +55,7 @@ jobs:
 
       - name: Build firmware
         working-directory: vial-qmk
-        run: make 5h100ky/dracula/qmk-draculad:vial
+        run: qmk compile -kb 5h100ky/dracula/qmk-draculad -km vial
 
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
