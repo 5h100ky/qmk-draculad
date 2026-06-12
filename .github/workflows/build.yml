@@ -44,18 +44,14 @@ jobs:
 
       - name: Copy keyboard files
         run: |
-          # Parent directory (config.h 제외 — child에서 OLED 정의 중복 방지)
-          mkdir -p vial-qmk/keyboards/5h100ky/dracula
-          cp keyboard.json rules.mk vial-qmk/keyboards/5h100ky/dracula/
-
-          # Keyboard variant
-          mkdir -p vial-qmk/keyboards/5h100ky/dracula/qmk-draculad
+          # QMK 폴더명 규칙: 언더스코어만 허용 (하이픈 불가)
+          mkdir -p vial-qmk/keyboards/5h100ky/dracula/qmk_draculad
           cp -r config.h keyboard.json rules.mk keymaps \
-            vial-qmk/keyboards/5h100ky/dracula/qmk-draculad/
+            vial-qmk/keyboards/5h100ky/dracula/qmk_draculad/
 
       - name: Build firmware
         working-directory: vial-qmk
-        run: qmk compile -kb 5h100ky/dracula/qmk-draculad -km vial
+        run: qmk compile -kb 5h100ky/dracula/qmk_draculad -km vial
 
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4

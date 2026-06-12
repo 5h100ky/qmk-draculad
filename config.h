@@ -1,9 +1,8 @@
 #pragma once
 
-// Split 
-#define EE_HANDS                          
+// Split
+#define EE_HANDS
 #define SPLIT_POINTING_ENABLE
-#define SOFT_SERIAL_PIN GP1
 
 // Pimoroni Trackball 
 #define POINTING_DEVICE_RIGHT             
