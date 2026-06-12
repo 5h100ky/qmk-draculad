@@ -9,10 +9,14 @@
 #define PIMORONI_TRACKBALL_INVERT_X       
 
 
-// I2C 
+// I2C
 #define I2C_DRIVER I2CD1
 #define I2C1_SDA_PIN GP2
 #define I2C1_SCL_PIN GP3
+#define I2C1_CLOCK_SPEED 400000
+
+// Pimoroni Trackball I2C address (default: 0x0A)
+#define PIMORONI_TRACKBALL_ADDRESS 0x0A
 
 // OLED
 #ifdef OLED_ENABLE
