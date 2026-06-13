@@ -1,177 +1,197 @@
 # DracuLad RP2040
 
-> A port of the [DracuLad](https://github.com/qmk/qmk_firmware/tree/master/keyboards/draculad) keyboard firmware for the **SparkFun Pro Micro RP2040** (and compatible boards), with Vial support, dual rotary encoders, and optional Pimoroni Trackball on the right half.
+A port of the [DracuLad](https://github.com/MangoIV/dracuLad) split keyboard firmware for the **SparkFun Pro Micro RP2040**, with [Vial](https://get.vial.today/) support, dual rotary encoders, and an optional [Pimoroni Trackball (PIM447)](https://shop.pimoroni.com/products/trackball-breakout) on the right half.
 
 ---
 
 ## Overview
 
-This firmware is based on the original DracuLad keyboard by [MangoIV](https://github.com/MangoIV), ported from ATmega32U4 to the **RP2040 microcontroller** (Pro Micro footprint). It targets the [Vial-QMK](https://get.vial.today/) fork for real-time keymap editing.
+The original DracuLad was designed around the ATmega32U4 Pro Micro. This port adapts the firmware to the **RP2040** microcontroller (same Pro Micro footprint) using the Vial-QMK fork.
 
-**Key differences from the original:**
-- MCU: ATmega32U4 → **Pro Micro RP2040**
-- WS2812 driver: `bitbang` → `vendor` (RP2040 PIO)
-- Split serial driver: `bitbang` → `vendor` (RP2040 PIO, half-duplex)
-- Encoder pin naming: AVR-style (`B2`, `B4`) → RP2040-style (`GP10`, `GP12`, etc.)
-- Added Pimoroni Trackball support on the right half via I2C
+| Item | Original | This Port |
+|------|----------|-----------|
+| MCU | ATmega32U4 | **RP2040** (Pro Micro footprint) |
+| WS2812 driver | `bitbang` | `vendor` (RP2040 PIO) |
+| Split serial driver | `bitbang` | `vendor` (RP2040 PIO, half-duplex) |
+| Encoder pins | AVR port labels (`B2`, `B4` …) | RP2040 GPIO numbers (`GP21`, `GP8` …) |
+| Trackball | — | Pimoroni PIM447 (right half, I2C) |
+| Keymap editor | — | Vial (real-time, no reflash needed) |
 
 ---
 
 ## Hardware
 
-| Component | Detail |
-|-----------|--------|
+| Component | Specification |
+|-----------|---------------|
 | MCU | SparkFun Pro Micro RP2040 (or compatible) |
-| Split connection | TRRS cable (half-duplex, single wire) |
-| RGB | WS2812 LEDs × 10 (5 per side) |
-| Encoders | 2× rotary encoders (one per side) |
-| Display | OLED (I2C) |
-| Trackball | Pimoroni Trackball (right half, I2C) — optional |
+| Split connection | TRRS cable — half-duplex single-wire serial |
+| RGB LEDs | WS2812B × 10 (5 per side) |
+| Encoders | EC11 rotary encoder × 2 (one per half) |
+| Display | SSD1306 OLED 128×64 (I2C, one per half) |
+| Trackball | Pimoroni PIM447 (right half only, I2C) — optional |
+
+**Important:** Always plug USB into the **left half**. The left half is the master (`MASTER_LEFT`).
 
 ---
 
 ## Pin Mapping
 
-| Function | Pin |
-|----------|-----|
-| Split serial (TRRS) | `GP1` |
-| WS2812 data | `GP7` |
-| I2C SDA (OLED + Trackball) | `GP2` |
-| I2C SCL (OLED + Trackball) | `GP3` |
-| Encoder L A/B | `GP10` / `GP14` |
-| Encoder R A/B | `GP12` / `GP13` |
+### Common (both halves use the same PCB)
 
-> ⚠️ **Note:** Verify all pin assignments against your actual PCB schematic before flashing. These values are based on a common Pro Micro RP2040 pinout and may differ depending on your specific board revision.
+| Function | GPIO |
+|----------|------|
+| Split serial (TRRS data) | `GP1` |
+| WS2812B data | `GP0` |
+| I2C SDA — OLED + Trackball | `GP2` |
+| I2C SCL — OLED + Trackball | `GP3` |
+| Matrix rows | `GP4`, `GP5`, `GP6`, `GP7` |
+| Matrix columns | `GP29`, `GP28`, `GP27`, `GP26`, `GP22` |
+
+### Encoder
+
+| Side | Pin A | Pin B |
+|------|-------|-------|
+| Left | `GP21` | `GP23` |
+| Right | `GP8` | `GP9` |
+
+> The left encoder A/B pins are swapped relative to the ATmega32U4 original to correct the rotation direction on the RP2040.
+
+### Trackball (right half)
+
+| Signal | GPIO |
+|--------|------|
+| I2C SDA | `GP2` |
+| I2C SCL | `GP3` |
+| I2C address | `0x0A` |
+| I2C clock | 400 kHz |
+
+The trackball PCB is physically mounted at 45° on the DracuLad. The firmware applies a coordinate rotation (`new_x = x − y`, `new_y = x + y`) so movement aligns with the keyboard axes.
+
+---
+
+## Default Keymap
+
+Five layers, editable at runtime via Vial.
+
+| Layer | Name | Description |
+|-------|------|-------------|
+| 0 | `BASE` | QWERTY with home-row mod-taps |
+| 1 | `NUM` | Numbers, arrow keys, mouse buttons |
+| 2 | `SYMB` | Symbols and function keys |
+| 3 | `MUS` | Mouse layer (left-hand mouse buttons) |
+| 4 | `ADJ` | RGB / boot controls |
+
+### Encoder actions
+
+| Encoder | Action |
+|---------|--------|
+| Left | Volume up / down |
+| Right | Volume up / down |
+
+### OLED
+
+| Half | Rotation | Content |
+|------|----------|---------|
+| Left (master) | 270° | Layer name, WPM, Caps Lock |
+| Right (slave) | 90° | DracuLad logo |
 
 ---
 
 ## File Structure
 
 ```
-keyboards/your_keyboard/
-├── keyboard.json       # Matrix, encoder, RGB, split config
-├── config.h            # Split, I2C, trackball defines
-├── rules.mk            # SERIAL_DRIVER, POINTING_DEVICE_DRIVER
+qmk-draculad/
+├── keyboard.json            # Matrix, encoders, RGB, split config
+├── config.h                 # I2C, trackball, OLED, handedness defines
+├── rules.mk                 # SERIAL_DRIVER, POINTING_DEVICE_DRIVER
 └── keymaps/
     └── vial/
-        ├── config.h    # VIAL_KEYBOARD_UID, unlock combo
-        ├── keymap.c    # Default keymap
-        ├── rules.mk    # VIAL_ENABLE = yes
-        └── vial.json   # Vial layout definition
+        ├── config.h         # VIAL_KEYBOARD_UID, layer count
+        ├── keymap.c         # Keymap, OLED rendering, encoder & trackball logic
+        ├── rules.mk         # VIAL_ENABLE = yes
+        └── vial.json        # Vial layout descriptor
 ```
 
 ---
 
 ## Building
 
-### Prerequisites
+### Requirements
 
-- [Vial-QMK](https://get.vial.today/docs/porting-to-vial.html) build environment set up
+- [Vial-QMK](https://get.vial.today/docs/porting-to-vial.html) build environment
 - `arm-none-eabi-gcc` toolchain
 
 ### Compile
 
 ```bash
-make your_keyboard_path:vial
+# From vial-qmk root, after placing this folder under keyboards/
+qmk compile -kb 5h100ky/dracula/qmk_draculad -km vial
 ```
+
+> QMK requires folder names to use underscores. The build copies files into `qmk_draculad` (underscore) automatically via GitHub Actions.
 
 ### Flash
 
-Put the Pro Micro RP2040 into bootloader mode (double-tap reset or hold BOOT while plugging in), then copy the generated `.uf2` file to the mounted RPI-RP2 drive:
+Put the Pro Micro RP2040 into bootloader mode by **double-tapping the reset button** (or hold BOOT while plugging in). A drive named `RPI-RP2` will appear.
 
 ```bash
-cp .build/your_keyboard_path_vial.uf2 /Volumes/RPI-RP2
+cp .build/5h100ky_dracula_qmk_draculad_vial.uf2 /Volumes/RPI-RP2
 ```
 
-Or use QMK Toolbox.
+Flash both halves separately with the **same** `.uf2` file. Handedness is set by `MASTER_LEFT` in `config.h` — no `EE_HANDS` or separate left/right binaries needed.
 
-### Set Handedness (first flash only)
+### GitHub Actions (auto-build)
 
-Flash each half separately using EE_HANDS:
-
-```bash
-# Left half
-qmk flash -kb your_keyboard -km vial -bl uf2-split-left
-
-# Right half
-qmk flash -kb your_keyboard -km vial -bl uf2-split-right
-```
+Every push to `main` triggers a build. Download the artifact `draculad-rp2040-vial` from the Actions tab.
 
 ---
 
-## Key Configuration
+## Key Implementation Notes
 
-### `keyboard.json` highlights
+### Encoder debounce
 
-```json
-"ws2812": { "pin": "GP7", "driver": "vendor" },
-"split": {
-    "enabled": true,
-    "serial": { "pin": "GP1" }
-}
-```
+The left encoder's EC11 detent generates equal CW and CCW quadrature pulses at rest, causing the volume to oscillate without net change. A 250 ms opposite-direction debounce is applied in `encoder_update_user` to suppress the spring-back pulse.
 
-### `rules.mk`
-
-```makefile
-SERIAL_DRIVER = vendor
-POINTING_DEVICE_DRIVER = pimoroni_trackball
-POINTING_DEVICE_ENABLE = yes
-```
-
-### `config.h`
+### Trackball 45° correction
 
 ```c
-#define EE_HANDS
-#define SPLIT_POINTING_ENABLE
-#define SOFT_SERIAL_PIN GP1
-#define POINTING_DEVICE_RIGHT
-#define I2C_DRIVER I2CD1
-#define I2C1_SDA_PIN GP2
-#define I2C1_SCL_PIN GP3
+// In pointing_device_task_user:
+int16_t nx = x - y;
+int16_t ny = x + y;
 ```
+
+This rotates the sensor coordinate frame 45° clockwise to match the physical keyboard orientation.
+
+### Split encoder indices
+
+Both encoders report as global index `0` in `encoder_update_user` under this Vial-QMK version. The left encoder direction is corrected by swapping `pin_a`/`pin_b` in `keyboard.json` rather than in software.
 
 ---
 
 ## Troubleshooting
 
-| Error | Fix |
-|-------|-----|
-| `'B2' undeclared` | Replace AVR-style pins (`B2`) with RP2040-style (`GP10`) in `keyboard.json` |
-| `Please use vendor WS2812 driver` | Add `"driver": "vendor"` to `ws2812` in `keyboard.json` |
-| `palWaitLineTimeout` undeclared | Set `SERIAL_DRIVER = vendor` in `rules.mk` |
-| `SERIAL_USART_TX_PIN redefined` | Remove `SERIAL_USART_TX_PIN`; use `SOFT_SERIAL_PIN` instead |
-| `SPLIT_POINTING_ENABLE not defined` | Add `#define SPLIT_POINTING_ENABLE` to `config.h` |
+| Symptom | Cause / Fix |
+|---------|-------------|
+| Only one half works | USB must be in the **left** half; check TRRS cable seating |
+| Encoder volume oscillates (up then down) | Encoder spring-back bounce — 250 ms debounce is applied; ensure encoder pins are well soldered |
+| Trackball moves diagonally | 45° rotation correction in `pointing_device_task_user` already handles this; check I2C solder joints if trackball is unresponsive |
+| OLED shows nothing | Verify I2C solder on `GP2`/`GP3`; check `OLED_DISPLAY_128X64` define |
+| Build fails: folder name error | QMK forbids hyphens in keyboard paths — use `qmk_draculad` (underscore) |
+| RGB does not light up | WS2812B data pin is `GP0`; driver must be `vendor` in `keyboard.json` |
 
 ---
 
 ## Credits
 
-- Original DracuLad keyboard design & firmware: [MangoIV](https://github.com/MangoIV)
+- Original DracuLad design and firmware: [MangoIV](https://github.com/MangoIV)
 - QMK Firmware: [qmk/qmk_firmware](https://github.com/qmk/qmk_firmware)
 - Vial: [vial-kb/vial-qmk](https://github.com/vial-kb/vial-qmk)
-- Pimoroni Trackball QMK driver: QMK community
+- Pimoroni Trackball QMK driver: QMK community contributors
 
 ---
 
 ## License
 
-The firmware code in this repository is based on [QMK Firmware](https://github.com/qmk/qmk_firmware), which is licensed under the **GNU General Public License v2 (or later)**. This project follows the same license terms.
+This firmware is based on [QMK Firmware](https://github.com/qmk/qmk_firmware) and is distributed under the **GNU General Public License v2 (or later)**. See [LICENSE](LICENSE) for the full text.
 
-```
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
-```
-
-> **Note on the original DracuLad design:**
-> The original [DracuLad keyboard](https://github.com/MangoIV/dracuLad) by [MangoIV](https://github.com/MangoIV) does not include an explicit license file. MangoIV has stated the project is open source and non-commercial. This RP2040 port is shared in the same spirit — for personal, non-commercial use by the keyboard community. If you intend to use this commercially, please reach out to the original author.
+> The original DracuLad hardware design by MangoIV does not carry an explicit license. This RP2040 firmware port is shared for personal, non-commercial use by the keyboard community, in the same open spirit as the original project.
