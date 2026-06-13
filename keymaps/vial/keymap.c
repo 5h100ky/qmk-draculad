@@ -179,6 +179,9 @@ bool oled_task_user(void) {
 
 #ifdef ENCODER_ENABLE
 bool encoder_update_user(uint8_t index, bool clockwise) {
+    // Left half encoders (index 0, 1) are physically reversed due to PCB routing
+    if (index == 0 || index == 1) clockwise = !clockwise;
+
     if (index == 0) {
         tap_code(clockwise ? KC_VOLU : KC_VOLD);
     } else if (index == 1) {
@@ -189,5 +192,21 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         tap_code(clockwise ? KC_UP : KC_DOWN);
     }
     return true;
+}
+#endif
+
+#ifdef POINTING_DEVICE_ENABLE
+void pointing_device_task_user(void) {
+    report_mouse_t report = pointing_device_get_report();
+    int16_t x = report.x;
+    int16_t y = report.y;
+    // PIM447 is mounted 45° CW — rotate reading 45° CCW to compensate
+    // new_x = x + y,  new_y = y - x
+    // If pointer moves in wrong direction, swap signs: new_x = x - y, new_y = x + y
+    int16_t nx = x + y;
+    int16_t ny = y - x;
+    report.x = (int8_t)(nx >  127 ?  127 : nx < -128 ? -128 : nx);
+    report.y = (int8_t)(ny >  127 ?  127 : ny < -128 ? -128 : ny);
+    pointing_device_set_report(report);
 }
 #endif

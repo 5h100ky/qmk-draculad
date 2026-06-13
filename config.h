@@ -4,9 +4,8 @@
 #define MASTER_LEFT
 #define SPLIT_POINTING_ENABLE
 
-// Pimoroni Trackball 
-#define POINTING_DEVICE_RIGHT             
-#define PIMORONI_TRACKBALL_INVERT_X       
+// Pimoroni Trackball
+#define POINTING_DEVICE_RIGHT
 
 
 // I2C
