@@ -197,15 +197,10 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 
 #ifdef POINTING_DEVICE_ENABLE
 report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
-    int16_t x = mouse_report.x;
-    int16_t y = mouse_report.y;
-    // PIM447 is mounted 45° CW — rotate reading 45° CCW to compensate
-    // new_x = x + y,  new_y = y - x
-    // If pointer moves in wrong direction, swap signs: new_x = x - y, new_y = x + y
-    int16_t nx = x + y;
-    int16_t ny = y - x;
-    mouse_report.x = (int8_t)(nx >  127 ?  127 : nx < -128 ? -128 : nx);
-    mouse_report.y = (int8_t)(ny >  127 ?  127 : ny < -128 ? -128 : ny);
+    // PCB footprint pre-compensates for 45° physical mounting — no rotation needed.
+    // Uncomment if an axis moves in the wrong direction:
+    // mouse_report.x = -mouse_report.x;
+    // mouse_report.y = -mouse_report.y;
     return mouse_report;
 }
 #endif
