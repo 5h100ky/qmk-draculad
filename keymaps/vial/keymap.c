@@ -196,17 +196,16 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 #endif
 
 #ifdef POINTING_DEVICE_ENABLE
-void pointing_device_task_user(void) {
-    report_mouse_t report = pointing_device_get_report();
-    int16_t x = report.x;
-    int16_t y = report.y;
+report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
+    int16_t x = mouse_report.x;
+    int16_t y = mouse_report.y;
     // PIM447 is mounted 45° CW — rotate reading 45° CCW to compensate
     // new_x = x + y,  new_y = y - x
     // If pointer moves in wrong direction, swap signs: new_x = x - y, new_y = x + y
     int16_t nx = x + y;
     int16_t ny = y - x;
-    report.x = (int8_t)(nx >  127 ?  127 : nx < -128 ? -128 : nx);
-    report.y = (int8_t)(ny >  127 ?  127 : ny < -128 ? -128 : ny);
-    pointing_device_set_report(report);
+    mouse_report.x = (int8_t)(nx >  127 ?  127 : nx < -128 ? -128 : nx);
+    mouse_report.y = (int8_t)(ny >  127 ?  127 : ny < -128 ? -128 : ny);
+    return mouse_report;
 }
 #endif
