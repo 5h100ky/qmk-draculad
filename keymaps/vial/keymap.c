@@ -179,14 +179,21 @@ bool oled_task_user(void) {
 
 #ifdef ENCODER_ENABLE
 bool encoder_update_user(uint8_t index, bool clockwise) {
-    // Left encoder (index 0) is physically reversed due to PCB routing
-    if (index == 0) clockwise = !clockwise;
+    // Both encoders report as index 0 and are physically reversed
+    static uint16_t last_time = 0;
+    static bool     last_cw   = true;
 
-    if (index == 0) {
-        tap_code(clockwise ? KC_VOLU : KC_VOLD);  // Left: volume
-    } else if (index == 3) {
-        tap_code(clockwise ? KC_WH_U : KC_WH_D);  // Right: scroll
-    }
+    if (index != 0) return true;
+
+    clockwise = !clockwise;
+
+    // Ignore bounce-back: drop opposite-direction event within 150ms
+    if (clockwise != last_cw && timer_elapsed(last_time) < 150) return true;
+
+    last_time = timer_read();
+    last_cw   = clockwise;
+
+    tap_code(clockwise ? KC_VOLU : KC_VOLD);
     return true;
 }
 #endif
