@@ -179,24 +179,22 @@ bool oled_task_user(void) {
 
 #ifdef ENCODER_ENABLE
 bool encoder_update_user(uint8_t index, bool clockwise) {
-    // Both encoders report as index 0 and are physically reversed
-    static bool    last_cw   = true;
-    static uint8_t skip_opp  = 0;  // opposite-direction events to skip after firing
+    // Direction fixed by swapping A/B pins in keyboard.json — no software flip needed.
+    // Debounce: after any event, block opposite-direction events for 250ms
+    // to absorb detent spring-back on the left encoder.
+    static uint16_t last_time = 0;
+    static bool     last_cw   = true;
+    static bool     init      = false;
 
     if (index != 0) return true;
 
-    clockwise = !clockwise;
-
-    if (clockwise != last_cw) {
-        // Opposite direction: skip if debounce count is active
-        if (skip_opp > 0) {
-            skip_opp--;
-            return true;
-        }
+    if (init && clockwise != last_cw && timer_elapsed(last_time) < 250) {
+        return true;
     }
 
-    last_cw  = clockwise;
-    skip_opp = 1;  // After firing, skip 1 immediate opposite event (detent spring-back)
+    init      = true;
+    last_time = timer_read();
+    last_cw   = clockwise;
 
     tap_code(clockwise ? KC_VOLU : KC_VOLD);
     return true;
