@@ -183,9 +183,9 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 0) clockwise = !clockwise;
 
     if (index == 0) {
-        tap_code(clockwise ? KC_VOLU : KC_VOLD);
-    } else if (index == 1) {
-        tap_code(clockwise ? KC_WH_U : KC_WH_D);
+        tap_code(clockwise ? KC_VOLU : KC_VOLD);  // Left: volume
+    } else if (index == 3) {
+        tap_code(clockwise ? KC_WH_U : KC_WH_D);  // Right: scroll
     }
     return true;
 }
