@@ -179,17 +179,13 @@ bool oled_task_user(void) {
 
 #ifdef ENCODER_ENABLE
 bool encoder_update_user(uint8_t index, bool clockwise) {
-    // Left half encoders (index 0, 1) are physically reversed due to PCB routing
-    if (index == 0 || index == 1) clockwise = !clockwise;
+    // Left encoder (index 0) is physically reversed due to PCB routing
+    if (index == 0) clockwise = !clockwise;
 
     if (index == 0) {
         tap_code(clockwise ? KC_VOLU : KC_VOLD);
     } else if (index == 1) {
-        tap_code(clockwise ? KC_PGUP : KC_PGDN);
-    } else if (index == 2) {
         tap_code(clockwise ? KC_WH_U : KC_WH_D);
-    } else if (index == 3) {
-        tap_code(clockwise ? KC_UP : KC_DOWN);
     }
     return true;
 }
@@ -197,10 +193,13 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 
 #ifdef POINTING_DEVICE_ENABLE
 report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
-    // PCB footprint pre-compensates for 45° physical mounting — no rotation needed.
-    // Uncomment if an axis moves in the wrong direction:
-    // mouse_report.x = -mouse_report.x;
-    // mouse_report.y = -mouse_report.y;
+    // Trackball mounted 45° rotated — rotate axes to align with keyboard orientation
+    int16_t x = mouse_report.x;
+    int16_t y = mouse_report.y;
+    int16_t nx = x - y;
+    int16_t ny = x + y;
+    mouse_report.x = (int8_t)(nx > 127 ? 127 : nx < -128 ? -128 : nx);
+    mouse_report.y = (int8_t)(ny > 127 ? 127 : ny < -128 ? -128 : ny);
     return mouse_report;
 }
 #endif
