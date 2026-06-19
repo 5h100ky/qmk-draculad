@@ -4,7 +4,7 @@ Version 2, June 1991
 This firmware is based on QMK Firmware (https://github.com/qmk/qmk_firmware),
 which is licensed under the GNU General Public License v2 (or later).
 
-Copyright (C) 2024 5h100ky
+Copyright (C) 2024–2026 5h100ky
 Copyright (C) QMK contributors
 
 This program is free software; you can redistribute it and/or modify it
